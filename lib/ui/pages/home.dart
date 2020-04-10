@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:HackRU/blocs/login/login.dart';
 import 'package:HackRU/models/cred_manager.dart';
 import 'package:HackRU/models/models.dart';
@@ -9,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:groovin_material_icons/groovin_material_icons.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class Home extends StatefulWidget {
   static const String routeName = '/material/bottom_navigation';
@@ -26,6 +29,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   PageController _tabController;
   String userEmailAddr;
   LcsCredential _credentials;
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
   @override
   void initState() {
@@ -38,6 +42,39 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         userEmailAddr = email;
       }
     });
+    setupPushNotifications();
+  }
+
+  void setupPushNotifications() async {
+    if (Platform.isIOS) {
+      /// TODO: Setup Firebase for IOS application
+      _firebaseMessaging.requestNotificationPermissions(
+          IosNotificationSettings(sound: true, badge: true, alert: true));
+      _firebaseMessaging.onIosSettingsRegistered
+          .listen((IosNotificationSettings settings) {
+        print("Settings registered: $settings");
+      });
+    }
+
+    _firebaseMessaging.getToken().then((token) async {
+      print("FCM token: $token");
+    });
+
+    FirebaseMessaging().onTokenRefresh.listen((newToken) {
+      print("New FCM token: $newToken");
+    });
+
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        print('on message $message');
+      },
+      onResume: (Map<String, dynamic> message) async {
+        print('on resume $message');
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+        print('on launch $message');
+      },
+    );
   }
 
   void onTap(int tab) {
