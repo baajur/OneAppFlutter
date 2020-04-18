@@ -67,6 +67,23 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         print('on message $message');
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: new Text(message['notification']['title'],style: TextStyle(color: Colors.grey),),
+              content: new Text(message['notification']['body']),
+              actions: <Widget>[
+                new FlatButton(
+                  child: new Text("Close"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
       },
       onResume: (Map<String, dynamic> message) async {
         print('on resume $message');
@@ -75,6 +92,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         print('on launch $message');
       },
     );
+    
+    _firebaseMessaging.subscribeToTopic('announcements');
   }
 
   void onTap(int tab) {
